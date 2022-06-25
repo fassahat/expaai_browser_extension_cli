@@ -1,4 +1,4 @@
-# <img src="public/icons/icon_48.png" width="45" align="left"> Expaai_browser_extension
+# <img src="public/icons/icon_48.png" width="45" align="left"> Expaai Browser Extension
 
 My Chrome Extension
 
