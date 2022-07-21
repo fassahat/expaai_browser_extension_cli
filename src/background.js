@@ -17,5 +17,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({
       message,
     });
+  } 
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'GREETINGSS') {
+    const message = `Hi ${
+      sender.tab ? 'Con' : 'Pop'
+    }, my name is Bac. I am from Background. It's great to hear from you...`;
+
+    // Log message coming from the `request` parameter
+    console.log(request.payload.message);
+    // Send a response message
+
+    const msg = request.payload.message
+    sendResponse({
+      msg,
+    });
+  } 
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'googlePatentText') {
+
+    // Log message coming from the `request` parameter
+    console.log(request.payload.message);
+    // Send a response message
+
+    fetch('http://localhost:105/sentiment_predict', {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ "sentences": request.payload.message })
+    }).then(function(res) {
+      if (res.status !== 200){
+        sendResponse({ msg: 'api error!' })
+      }
+
+      res.json().then(function(data) {
+        sendResponse({ data })
+      })
+    });
+
+    // const msg = request.payload.message
+    // sendResponse({
+    //   msg,
+    // });
   }
+
+  return true
 });

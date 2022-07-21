@@ -12,10 +12,15 @@
 // See https://developer.chrome.com/extensions/content_scripts
 
 // Log `title` of current active web page
-const pageTitle = document.head.getElementsByTagName('title')[0].innerHTML;
-console.log(
-  `Page title is: '${pageTitle}' - evaluated by Chrome extension's 'contentScript.js' file`
-);
+// const pageTitle = document.getElementsByTagName('title')[0].innerHTML;
+// const embedText = document.body.getElementsByTagName('embed')[0].outerHTML
+
+let isPDF = false
+if (document.querySelectorAll("embed")[0]) {
+ isPDF = document.querySelectorAll("embed")[0].type == "application/pdf"
+}
+console.log(isPDF)
+// console.log(document.querySelectorAll("embed"))
 
 // Communicate with background file by sending a message
 chrome.runtime.sendMessage(
@@ -41,3 +46,78 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   sendResponse({});
   return true;
 });
+
+async function myDisplay() {
+  let myPromise = new Promise(function(resolve, reject) {
+    resolve("I love You !!");
+  });
+
+  return await myPromise
+}
+
+(async () => {
+  let message = await myDisplay();
+  // let tab = await getCurrentTab();
+  // var pdf = pdfjsLib.getDocument('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
+  chrome.runtime.sendMessage(
+    {
+      type: 'GREETINGSS',
+      payload: {
+        message: message,
+      },
+    },
+    response => {
+      console.log(response.msg);
+    }
+  );
+})();
+
+function getGooglePatentText() {
+  let divIdNum = 1
+  let patentText = ''
+  const divIdPrefix = 'p-0000'
+  const claimDivPrefix = 'CLM-00000'
+
+  while (true) {
+    let divIdNumString = divIdNum.toString()
+    let divId = divIdPrefix.substr(0,divIdPrefix.length-divIdNumString.length) + divIdNumString
+    if (document.querySelector(`[num=${divId}]`)) {
+      let element = document.querySelector(`[num=${divId}]`)
+      let text = element.innerText || element.textContent
+      patentText = patentText + text
+      divIdNum = divIdNum + 1
+    } else {
+      divIdNum = 1
+      break
+    }
+  }
+
+  while (true) {
+    let divIdNumString = divIdNum.toString()
+    let divId = claimDivPrefix.substr(0,claimDivPrefix.length-divIdNumString.length) + divIdNumString
+    if (document.getElementById(divId)) {
+      let element = document.getElementById(divId)
+      let text = element.innerText || element.textContent
+      patentText = patentText + text
+      divIdNum = divIdNum + 1
+    } else {
+      break
+    }
+  }
+
+  // console.log(patentText)
+
+  return patentText.match( /[^\.!\?]+[\.!\?]+/g )
+}
+
+chrome.runtime.sendMessage(
+  {
+    type: 'googlePatentText',
+    payload: {
+      message: getGooglePatentText(),
+    },
+  },
+  response => {
+    console.log(response.data);
+  }
+);

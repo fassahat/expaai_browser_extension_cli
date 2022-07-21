@@ -14,6 +14,13 @@ const config = (env, argv) =>
       background: PATHS.src + '/background.js',
     },
     devtool: argv.mode === 'production' ? false : 'source-map',
+    resolve: {
+      fallback: {
+          "fs": false,
+          "https": false,
+          "http": false,
+      },
+    },
   });
 
 module.exports = config;
