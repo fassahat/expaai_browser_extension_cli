@@ -47,6 +47,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'ANALYSE') {
+    chrome.runtime.sendMessage(
+      {
+        type: 'googlePatentText',
+        payload: {
+          message: getGooglePatentText(),
+        },
+      },
+      response => {
+        console.log(response.data);
+      }
+    );
+  }
+
+  // Send an empty response
+  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
+  sendResponse({});
+  return true;
+});
+
 async function myDisplay() {
   let myPromise = new Promise(function(resolve, reject) {
     resolve("I love You !!");
@@ -110,14 +131,14 @@ function getGooglePatentText() {
   return patentText.match( /[^\.!\?]+[\.!\?]+/g )
 }
 
-chrome.runtime.sendMessage(
-  {
-    type: 'googlePatentText',
-    payload: {
-      message: getGooglePatentText(),
-    },
-  },
-  response => {
-    console.log(response.data);
-  }
-);
+// chrome.runtime.sendMessage(
+//   {
+//     type: 'googlePatentText',
+//     payload: {
+//       message: getGooglePatentText(),
+//     },
+//   },
+//   response => {
+//     console.log(response.data);
+//   }
+// );
