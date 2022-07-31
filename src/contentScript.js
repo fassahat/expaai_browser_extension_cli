@@ -57,6 +57,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         },
       },
       response => {
+        // let element = document.querySelector(`[num=p-0001`)
+        let element = document.getElementById('CLM-00001')
+        // element.style.backgroundColor = "#00FF00"
+        
+			  var myRegExp = new RegExp('mouse', 'gi');
+			  var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
+			  element.innerHTML= final_str;
+
         console.log(response.data);
       }
     );
