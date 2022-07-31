@@ -57,19 +57,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         },
       },
       response => {
-        let element = document.querySelector(`[num=p-0001]`)
+        // let element = document.querySelector(`[num=p-0001]`)
         // let element = document.getElementById('CLM-00001')
         // element.style.backgroundColor = "#00FF00"
         
-			  var myRegExp = new RegExp('provides a trap for capturing', 'gi');
-			  var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
-			  element.innerHTML= final_str;
+			  // var myRegExp = new RegExp('provides a trap for capturing', 'gi');
+			  // var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
+			  // element.innerHTML= final_str;
 
         highlightSentences(response.data)
 
-        console.log(response.data)
-        console.log(getGooglePatentText(true))
-        console.log(getKeyByMatchingText(getGooglePatentText(true), 'provides a trap for capturing'))
+        // console.log(response.data)
+        // console.log(getGooglePatentText(true))
+        // console.log(getKeyByMatchingText(getGooglePatentText(true), 'provides a trap for capturing'))
       }
     );
   }
@@ -81,15 +81,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function highlightSentences(sentenceObject) {
+  const divTexts = getGooglePatentText(true)
+  console.log(divTexts)
+
   for (const type in sentenceObject) {
     if (type === "advantages") {
-      console.log("ad")
+      for (const sentence of sentenceObject["advantages"]) {
+        console.log(sentence)
+        const key = getKeyByMatchingText(divTexts, sentence)
+        if (key.includes('CLM')) {
+          highlighter(sentence, 'green', false, key)
+        } else {
+          highlighter(sentence, 'green', true, key)
+        }
+      }
     } else if (type === "solutions") {
-      console.log("sol")
+      for (const sentence of sentenceObject["solutions"]) {
+        const key = getKeyByMatchingText(divTexts, sentence)
+        if (key.includes('CLM')) {
+          highlighter(sentence, 'yellow', false, key)
+        } else {
+          highlighter(sentence, 'yellow', true, key)
+        }
+      }
     } else if (type === "problems") {
-      console.log("prob")
+      for (const sentence of sentenceObject["problems"]) {
+        const key = getKeyByMatchingText(divTexts, sentence)
+        if (key.includes('CLM')) {
+          highlighter(sentence, 'red', false, key)
+        } else {
+          highlighter(sentence, 'red', true, key)
+        }
+      }
     }
   }
+}
+
+function highlighter(sentence, color, query, key) {
+  let element = null
+  if (query) {
+    element = document.querySelector(key)
+  } else {
+    element = document.getElementById(key)
+  }
+  
+  var myRegExp = new RegExp(sentence, 'gi');
+  var final_str = element.innerHTML.replace(myRegExp, 
+    function(str) {
+      return `<span style="background-color:${color}">`+str+'</span>'
+    });
+  element.innerHTML= final_str;
 }
 
 async function myDisplay() {
