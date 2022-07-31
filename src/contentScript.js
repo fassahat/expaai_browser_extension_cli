@@ -53,19 +53,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       {
         type: 'googlePatentText',
         payload: {
-          message: getGooglePatentText(),
+          message: getGooglePatentText(false),
         },
       },
       response => {
-        // let element = document.querySelector(`[num=p-0001`)
-        let element = document.getElementById('CLM-00001')
+        let element = document.querySelector(`[num=p-0001]`)
+        // let element = document.getElementById('CLM-00001')
         // element.style.backgroundColor = "#00FF00"
         
-			  var myRegExp = new RegExp('mouse', 'gi');
+			  var myRegExp = new RegExp('provides a trap for capturing', 'gi');
 			  var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
 			  element.innerHTML= final_str;
 
-        console.log(response.data);
+        highlightSentences(response.data)
+
+        console.log(response.data)
+        console.log(getGooglePatentText(true))
+        console.log(getKeyByMatchingText(getGooglePatentText(true), 'provides a trap for capturing'))
       }
     );
   }
@@ -75,6 +79,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   sendResponse({});
   return true;
 });
+
+function highlightSentences(sentenceObject) {
+  for (const type in sentenceObject) {
+    if (type === "advantages") {
+      console.log("ad")
+    } else if (type === "solutions") {
+      console.log("sol")
+    } else if (type === "problems") {
+      console.log("prob")
+    }
+  }
+}
 
 async function myDisplay() {
   let myPromise = new Promise(function(resolve, reject) {
@@ -101,9 +117,10 @@ async function myDisplay() {
   );
 })();
 
-function getGooglePatentText() {
+function getGooglePatentText(getHash) {
   let divIdNum = 1
   let patentText = ''
+  let hash = {}
   const divIdPrefix = 'p-0000'
   const claimDivPrefix = 'CLM-00000'
 
@@ -113,6 +130,7 @@ function getGooglePatentText() {
     if (document.querySelector(`[num=${divId}]`)) {
       let element = document.querySelector(`[num=${divId}]`)
       let text = element.innerText || element.textContent
+      hash[`[num=${divId}]`] = text
       patentText = patentText + text
       divIdNum = divIdNum + 1
     } else {
@@ -127,6 +145,7 @@ function getGooglePatentText() {
     if (document.getElementById(divId)) {
       let element = document.getElementById(divId)
       let text = element.innerText || element.textContent
+      hash[divId] = text
       patentText = patentText + text
       divIdNum = divIdNum + 1
     } else {
@@ -134,19 +153,13 @@ function getGooglePatentText() {
     }
   }
 
-  // console.log(patentText)
-
-  return patentText.match( /[^\.!\?]+[\.!\?]+/g )
+  if (getHash) {
+    return hash
+  } else {
+    return patentText.match( /[^\.!\?]+[\.!\?]+/g )
+  }
 }
 
-// chrome.runtime.sendMessage(
-//   {
-//     type: 'googlePatentText',
-//     payload: {
-//       message: getGooglePatentText(),
-//     },
-//   },
-//   response => {
-//     console.log(response.data);
-//   }
-// );
+function getKeyByMatchingText(object, value) {
+  return Object.keys(object).find(key => object[key].includes(value));
+}
