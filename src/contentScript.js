@@ -57,14 +57,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         },
       },
       response => {
-        // let element = document.querySelector(`[num=p-0001]`)
+        // let element = document.querySelector(`[num=p-0004]`)
         // let element = document.getElementById('CLM-00001')
-        // element.style.backgroundColor = "#00FF00"
         
-			  // var myRegExp = new RegExp('provides a trap for capturing', 'gi');
+			  //var myRegExp = new RegExp('Traditional methods of dealing with mouse invasion in the home involves the use of poisoned baits \\(rodenticides\\) that contain anticoagulants\\, such as warfarin\\, pival\\, brodifacoum\\, difethialone and chlorophacinone\\.', 'gi');
+        // var myRegExp = new RegExp(escapeString('Traditional methods of dealing with mouse invasion in the home involves the use of poisoned baits (rodenticides) that contain anticoagulants, such as warfarin, pival, brodifacoum, difethialone and chlorophacinone.'), 'gi')
+        // console.log(myRegExp)
 			  // var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
 			  // element.innerHTML= final_str;
 
+        // console.log(response.data)
         highlightSentences(response.data)
 
         // console.log(response.data)
@@ -80,6 +82,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
+function escapeString(str) {
+  return str.replace('(', '\\(')
+    .replace(')', '\\)')
+    .replace(':', '\\:')
+    .replace(';', '\\;')
+}
+
 function highlightSentences(sentenceObject) {
   const divTexts = getGooglePatentText(true)
   console.log(divTexts)
@@ -87,7 +96,6 @@ function highlightSentences(sentenceObject) {
   for (const type in sentenceObject) {
     if (type === "advantages") {
       for (const sentence of sentenceObject["advantages"]) {
-        console.log(sentence)
         const key = getKeyByMatchingText(divTexts, sentence)
         if (key.includes('CLM')) {
           highlighter(sentence, 'green', false, key)
@@ -125,7 +133,7 @@ function highlighter(sentence, color, query, key) {
     element = document.getElementById(key)
   }
   
-  var myRegExp = new RegExp(sentence, 'gi');
+  var myRegExp = new RegExp(escapeString(sentence), 'gi');
   var final_str = element.innerHTML.replace(myRegExp, 
     function(str) {
       return `<span style="background-color:${color}">`+str+'</span>'
