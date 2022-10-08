@@ -66,7 +66,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			  // var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
 			  // element.innerHTML= final_str;
 
-        // console.log(response.data)
+        console.log(response.data)
         highlightSentences(response.data)
 
         // console.log(response.data)
@@ -87,6 +87,9 @@ function escapeString(str) {
     .replace(')', '\\)')
     .replace(':', '\\:')
     .replace(';', '\\;')
+    .replace(',', '\\,')
+    .replace('.', '\\.')
+    .replace('/', '\\/')
 }
 
 function highlightSentences(sentenceObject) {
@@ -97,28 +100,34 @@ function highlightSentences(sentenceObject) {
     if (type === "advantages") {
       for (const sentence of sentenceObject["advantages"]) {
         const key = getKeyByMatchingText(divTexts, sentence)
-        if (key.includes('CLM')) {
-          highlighter(sentence, 'green', false, key)
-        } else {
-          highlighter(sentence, 'green', true, key)
+        if (key) {
+          if (key.includes('CLM')) {
+            highlighter(sentence, '#CCFFCD', false, key)
+          } else {
+            highlighter(sentence, '#CCFFCD', true, key)
+          }
         }
       }
     } else if (type === "solutions") {
       for (const sentence of sentenceObject["solutions"]) {
         const key = getKeyByMatchingText(divTexts, sentence)
-        if (key.includes('CLM')) {
-          highlighter(sentence, 'yellow', false, key)
-        } else {
-          highlighter(sentence, 'yellow', true, key)
+        if (key) {
+          if (key.includes('CLM')) {
+            highlighter(sentence, '#F4EA56', false, key)
+          } else {
+            highlighter(sentence, '#F4EA56', true, key)
+          }
         }
       }
     } else if (type === "problems") {
       for (const sentence of sentenceObject["problems"]) {
         const key = getKeyByMatchingText(divTexts, sentence)
-        if (key.includes('CLM')) {
-          highlighter(sentence, 'red', false, key)
-        } else {
-          highlighter(sentence, 'red', true, key)
+        if (key) {
+          if (key.includes('CLM')) {
+            highlighter(sentence, '#FFCCCB', false, key)
+          } else {
+            highlighter(sentence, '#FFCCCB', true, key)
+          }
         }
       }
     }
@@ -133,7 +142,7 @@ function highlighter(sentence, color, query, key) {
     element = document.getElementById(key)
   }
   
-  var myRegExp = new RegExp(escapeString(sentence), 'gi');
+  var myRegExp = new RegExp(escapeString(sentence), 'gi')
   var final_str = element.innerHTML.replace(myRegExp, 
     function(str) {
       return `<span style="background-color:${color}">`+str+'</span>'
