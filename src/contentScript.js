@@ -82,16 +82,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-function escapeString(str) {
-  return str.replace('(', '\\(')
-    .replace(')', '\\)')
-    .replace(':', '\\:')
-    .replace(';', '\\;')
-    .replace(',', '\\,')
-    .replace('.', '\\.')
-    .replace('/', '\\/')
-}
-
 function highlightSentences(sentenceObject) {
   const divTexts = getGooglePatentText(true)
   console.log(divTexts)
@@ -134,20 +124,31 @@ function highlightSentences(sentenceObject) {
   }
 }
 
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 function highlighter(sentence, color, query, key) {
   let element = null
   if (query) {
     element = document.querySelector(key)
+  
+    var myRegExp = new RegExp(escapeRegExp(sentence), 'gi')
+    var final_str = element.innerHTML.replace(myRegExp, 
+      function(str) {
+        return `<span style="background-color:${color}">`+str+'</span>'
+      });
+    element.innerHTML= final_str;
   } else {
-    element = document.getElementById(key)
+    element = document.getElementById(key).style.backgroundColor = color
   }
   
-  var myRegExp = new RegExp(escapeString(sentence), 'gi')
-  var final_str = element.innerHTML.replace(myRegExp, 
-    function(str) {
-      return `<span style="background-color:${color}">`+str+'</span>'
-    });
-  element.innerHTML= final_str;
+  // var myRegExp = new RegExp(sentence, 'gi')
+  // var final_str = element.innerHTML.replace(myRegExp, 
+  //   function(str) {
+  //     return `<span style="background-color:${color}">`+str+'</span>'
+  //   });
+  // element.innerHTML= final_str;
 }
 
 async function myDisplay() {
@@ -179,6 +180,7 @@ function getGooglePatentText(getHash) {
   let divIdNum = 1
   let patentText = ''
   let hash = {}
+  let claimTextArray = []
   const divIdPrefix = 'p-0000'
   const claimDivPrefix = 'CLM-00000'
 
@@ -204,7 +206,8 @@ function getGooglePatentText(getHash) {
       let element = document.getElementById(divId)
       let text = element.innerText || element.textContent
       hash[divId] = text
-      patentText = patentText + text
+      // patentText = patentText + text
+      claimTextArray.push(text)
       divIdNum = divIdNum + 1
     } else {
       break
@@ -214,7 +217,8 @@ function getGooglePatentText(getHash) {
   if (getHash) {
     return hash
   } else {
-    return patentText.match( /[^\.!\?]+[\.!\?]+/g )
+    console.log(hash)
+    return claimTextArray.concat(patentText.match( /[^\.!\?]+[\.!\?]+/g ))
   }
 }
 
