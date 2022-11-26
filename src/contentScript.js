@@ -57,21 +57,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         },
       },
       response => {
-        // let element = document.querySelector(`[num=p-0004]`)
-        // let element = document.getElementById('CLM-00001')
-        
-			  //var myRegExp = new RegExp('Traditional methods of dealing with mouse invasion in the home involves the use of poisoned baits \\(rodenticides\\) that contain anticoagulants\\, such as warfarin\\, pival\\, brodifacoum\\, difethialone and chlorophacinone\\.', 'gi');
-        // var myRegExp = new RegExp(escapeString('Traditional methods of dealing with mouse invasion in the home involves the use of poisoned baits (rodenticides) that contain anticoagulants, such as warfarin, pival, brodifacoum, difethialone and chlorophacinone.'), 'gi')
-        // console.log(myRegExp)
-			  // var final_str = element.innerHTML.replace(myRegExp, function(str) {return '<span style="background-color:tomato">'+str+'</span>'});
-			  // element.innerHTML= final_str;
-
-        console.log(response.data)
         highlightSentences(response.data)
-
-        // console.log(response.data)
-        // console.log(getGooglePatentText(true))
-        // console.log(getKeyByMatchingText(getGooglePatentText(true), 'provides a trap for capturing'))
       }
     );
   }
@@ -125,7 +111,7 @@ function highlightSentences(sentenceObject) {
 }
 
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
 
 function highlighter(sentence, color, query, key) {
@@ -140,7 +126,9 @@ function highlighter(sentence, color, query, key) {
       });
     element.innerHTML= final_str;
   } else {
-    element = document.getElementById(key).style.backgroundColor = color
+    // document.getElementById(key).style.backgroundColor = color
+    var elementText = document.getElementById(key).innerText
+    document.getElementById(key).innerHTML = `<span style="background-color:${color}">`+elementText+'</span>'
   }
   
   // var myRegExp = new RegExp(sentence, 'gi')
@@ -217,7 +205,6 @@ function getGooglePatentText(getHash) {
   if (getHash) {
     return hash
   } else {
-    console.log(hash)
     return claimTextArray.concat(patentText.match( /[^\.!\?]+[\.!\?]+/g ))
   }
 }
