@@ -63,6 +63,26 @@ import './popup.css';
     });
   })
 
+  document.getElementById('searchButton').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      const tab = tabs[0];
+
+      chrome.tabs.sendMessage(
+        tab.id,
+        {
+          type: 'SEMANTIC_SEARCH',
+          payload: {
+            question: document.getElementById("searchTxt").value,
+            pressed: true,
+          },
+        },
+        response => {
+          console.log('Current count value passed to contentScript file');
+        }
+      );
+    });
+  })
+
   // function updateCounter({ type }) {
   //   counterStorage.get(count => {
   //     let newCount;

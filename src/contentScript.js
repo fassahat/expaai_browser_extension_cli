@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       {
         type: 'googlePatentText',
         payload: {
-          message: getGooglePatentText(false),
+          message: getGooglePatentText(false, true),
         },
       },
       response => {
@@ -68,41 +68,76 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-function highlightSentences(sentenceObject) {
-  const divTexts = getGooglePatentText(true)
-  console.log(divTexts)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'SEMANTIC_SEARCH') {
+    chrome.runtime.sendMessage(
+      {
+        type: 'googlePatentTextSemanticSearch',
+        payload: {
+          question: request.payload.question,
+          message: getGooglePatentText(false, false),
+        },
+      },
+      response => {
+        console.log(response.data)
+        highlightSentences(response.data)
+      }
+    );
+  }
 
-  for (const type in sentenceObject) {
-    if (type === "advantages") {
-      for (const sentence of sentenceObject["advantages"]) {
-        const key = getKeyByMatchingText(divTexts, sentence)
-        if (key) {
-          if (key.includes('CLM')) {
-            highlighter(sentence, '#CCFFCD', false, key)
-          } else {
-            highlighter(sentence, '#CCFFCD', true, key)
+  // Send an empty response
+  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
+  sendResponse({});
+  return true;
+});
+
+function highlightSentences(sentenceObject) {
+  const divTexts = getGooglePatentText(true, false)
+  // console.log(divTexts)
+
+  if ('answer' in sentenceObject) {
+    const answer = sentenceObject['answer']
+    const key = getKeyByMatchingText(divTexts, answer)
+    if (key) {
+      if (key.includes('CLM')) {
+        highlighter(answer, '#00B4CC', false, key)
+      } else {
+        highlighter(answer, '#00B4CC', true, key)
+      }
+    }
+  } else {
+    for (const type in sentenceObject) {
+      if (type === "advantages") {
+        for (const sentence of sentenceObject["advantages"]) {
+          const key = getKeyByMatchingText(divTexts, sentence)
+          if (key) {
+            if (key.includes('CLM')) {
+              highlighter(sentence, '#CCFFCD', false, key)
+            } else {
+              highlighter(sentence, '#CCFFCD', true, key)
+            }
           }
         }
-      }
-    } else if (type === "solutions") {
-      for (const sentence of sentenceObject["solutions"]) {
-        const key = getKeyByMatchingText(divTexts, sentence)
-        if (key) {
-          if (key.includes('CLM')) {
-            highlighter(sentence, '#F4EA56', false, key)
-          } else {
-            highlighter(sentence, '#F4EA56', true, key)
+      } else if (type === "solutions") {
+        for (const sentence of sentenceObject["solutions"]) {
+          const key = getKeyByMatchingText(divTexts, sentence)
+          if (key) {
+            if (key.includes('CLM')) {
+              highlighter(sentence, '#F4EA56', false, key)
+            } else {
+              highlighter(sentence, '#F4EA56', true, key)
+            }
           }
         }
-      }
-    } else if (type === "problems") {
-      for (const sentence of sentenceObject["problems"]) {
-        const key = getKeyByMatchingText(divTexts, sentence)
-        if (key) {
-          if (key.includes('CLM')) {
-            highlighter(sentence, '#FFCCCB', false, key)
-          } else {
-            highlighter(sentence, '#FFCCCB', true, key)
+      } else if (type === "problems") {
+        for (const sentence of sentenceObject["problems"]) {
+          const key = getKeyByMatchingText(divTexts, sentence)
+          if (key) {
+            if (key.includes('CLM')) {
+              highlighter(sentence, '#FFCCCB', false, key)
+            } else {
+              highlighter(sentence, '#FFCCCB', true, key)
+            }
           }
         }
       }
@@ -111,7 +146,7 @@ function highlightSentences(sentenceObject) {
 }
 
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+  return string.replace(/[.*+?^$%{}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
 
 function highlighter(sentence, color, query, key) {
@@ -124,11 +159,20 @@ function highlighter(sentence, color, query, key) {
       function(str) {
         return `<span style="background-color:${color}">`+str+'</span>'
       });
-    element.innerHTML= final_str;
+    element.innerHTML= final_str
   } else {
     // document.getElementById(key).style.backgroundColor = color
     var elementText = document.getElementById(key).innerText
-    document.getElementById(key).innerHTML = `<span style="background-color:${color}">`+elementText+'</span>'
+    // document.getElementById(key).innerHTML = `<span style="background-color:${color}">`+elementText+'</span>'
+    document.getElementById(key).innerHTML = '<span>'+elementText+'</span>'
+    element = document.getElementById(key)
+  
+    var myRegExp = new RegExp(escapeRegExp(sentence), 'gi')
+    var final_str = element.innerHTML.replace(myRegExp, 
+      function(str) {
+        return `<span style="background-color:${color}">`+str+'</span>'
+      });
+    element.innerHTML= final_str
   }
   
   // var myRegExp = new RegExp(sentence, 'gi')
@@ -164,7 +208,7 @@ async function myDisplay() {
   );
 })();
 
-function getGooglePatentText(getHash) {
+function getGooglePatentText(getHash, getArray) {
   let divIdNum = 1
   let patentText = ''
   let hash = {}
@@ -194,7 +238,7 @@ function getGooglePatentText(getHash) {
       let element = document.getElementById(divId)
       let text = element.innerText || element.textContent
       hash[divId] = text
-      // patentText = patentText + text
+      patentText = patentText + text
       claimTextArray.push(text)
       divIdNum = divIdNum + 1
     } else {
@@ -204,8 +248,10 @@ function getGooglePatentText(getHash) {
 
   if (getHash) {
     return hash
-  } else {
+  } else if (getArray) {
     return claimTextArray.concat(patentText.match( /[^\.!\?]+[\.!\?]+/g ))
+  } else {
+    return patentText
   }
 }
 
