@@ -44,6 +44,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log(request.payload.message);
     // Send a response message
 
+    chrome.runtime.sendMessage({
+      msg: "something_started"
+    })
+
     fetch('http://localhost:105/sentiment_predict', {
       method: 'POST',
       headers: {
@@ -57,6 +61,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       res.json().then(function(data) {
         sendResponse({ data })
+        chrome.runtime.sendMessage({
+          msg: "something_completed"
+        })
       })
     });
   } else if (request.type === 'googlePatentTextSemanticSearch') {
@@ -64,6 +71,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Log message coming from the `request` parameter
     console.log(request.payload.message);
     // Send a response message
+
+    chrome.runtime.sendMessage({
+      msg: "something_started"
+    })
 
     fetch('http://localhost:105/semantic_search', {
       method: 'POST',
@@ -82,6 +93,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       res.json().then(function(data) {
         sendResponse({ data })
+        chrome.runtime.sendMessage({
+          msg: "something_completed"
+        })
       })
     });
   }

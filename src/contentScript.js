@@ -174,13 +174,6 @@ function highlighter(sentence, color, query, key) {
       });
     element.innerHTML= final_str
   }
-  
-  // var myRegExp = new RegExp(sentence, 'gi')
-  // var final_str = element.innerHTML.replace(myRegExp, 
-  //   function(str) {
-  //     return `<span style="background-color:${color}">`+str+'</span>'
-  //   });
-  // element.innerHTML= final_str;
 }
 
 async function myDisplay() {

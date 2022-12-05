@@ -57,10 +57,11 @@ import './popup.css';
           },
         },
         response => {
-          console.log('Current count value passed to contentScript file');
         }
-      );
-    });
+      )
+
+      loading()
+    })
   })
 
   document.getElementById('searchButton').addEventListener('click', () => {
@@ -77,11 +78,29 @@ import './popup.css';
           },
         },
         response => {
-          console.log('Current count value passed to contentScript file');
         }
-      );
-    });
+      )
+
+      loading()
+    })
   })
+  
+  function loading() {
+    chrome.runtime.onMessage.addListener(
+      function(request, sender, sendResponse) {
+        var loaderClasses = document.getElementsByClassName('cover-spin')
+        if (request.msg === "something_completed") {
+          for(var i = 0; i < loaderClasses.length; i++) {
+            loaderClasses[i].style.display = 'none'
+          }
+        } else if (request.msg === "something_started") {
+          for(var i = 0; i < loaderClasses.length; i++) {
+            loaderClasses[i].style.display = 'block'
+          }
+        }
+      }
+    )
+  }
 
   // function updateCounter({ type }) {
   //   counterStorage.get(count => {
