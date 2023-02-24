@@ -152,14 +152,29 @@ function escapeRegExp(string) {
 function highlighter(sentence, color, query, key) {
   let element = null
   if (query) {
-    element = document.querySelector(key)
-  
-    var myRegExp = new RegExp(escapeRegExp(sentence), 'gi')
-    var final_str = element.innerHTML.replace(myRegExp, 
-      function(str) {
-        return `<span style="background-color:${color}">`+str+'</span>'
-      });
-    element.innerHTML= final_str
+    if (key.includes('num')) {
+      element = document.querySelector(key)
+    
+      var myRegExp = new RegExp(escapeRegExp(sentence), 'gi')
+      var final_str = element.innerHTML.replace(myRegExp, 
+        function(str) {
+          return `<span style="background-color:${color}">`+str+'</span>'
+        });
+      element.innerHTML= final_str
+    } else {
+      // document.getElementById(key).style.backgroundColor = color
+      var elementText = document.getElementById(key).innerText
+      // document.getElementById(key).innerHTML = `<span style="background-color:${color}">`+elementText+'</span>'
+      document.getElementById(key).innerHTML = '<span>'+elementText+'</span>'
+      element = document.getElementById(key)
+    
+      var myRegExp = new RegExp(escapeRegExp(sentence), 'gi')
+      var final_str = element.innerHTML.replace(myRegExp, 
+        function(str) {
+          return `<span style="background-color:${color}">`+str+'</span>'
+        });
+      element.innerHTML= final_str
+    }
   } else {
     // document.getElementById(key).style.backgroundColor = color
     var elementText = document.getElementById(key).innerText
@@ -209,13 +224,24 @@ function getGooglePatentText(getHash, getArray) {
   const divIdPrefix = 'p-0000'
   const claimDivPrefix = 'CLM-00000'
 
+  if (document.querySelector('[num=p-0001]') || document.getElementById('p-0001')) {
+    divIdNum = 1
+  } else {
+    divIdNum = 2
+  }
+
   while (true) {
     let divIdNumString = divIdNum.toString()
     let divId = divIdPrefix.substr(0,divIdPrefix.length-divIdNumString.length) + divIdNumString
-    if (document.querySelector(`[num=${divId}]`)) {
-      let element = document.querySelector(`[num=${divId}]`)
+    if (document.querySelector(`[num=${divId}]`) || document.getElementById(divId)) {
+      let element = document.querySelector(`[num=${divId}]`) || document.getElementById(divId)
       let text = element.innerText || element.textContent
-      hash[`[num=${divId}]`] = text
+      if (document.querySelector(`[num=${divId}]`)){
+        hash[`[num=${divId}]`] = text
+      } else {
+        hash[divId] = text
+      }
+      
       patentText = patentText + text
       divIdNum = divIdNum + 1
     } else {
