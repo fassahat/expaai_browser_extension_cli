@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       msg: "something_started"
     })
 
-    fetch('http://localhost:105/sentiment_predict', {
+    fetch('http://localhost:5000/sentiment_predict', {
       method: 'POST',
       headers: {
       'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       msg: "something_started"
     })
 
-    fetch('http://localhost:105/semantic_search', {
+    fetch('http://localhost:5000/semantic_search', {
       method: 'POST',
       headers: {
       'Content-Type': 'application/json',
